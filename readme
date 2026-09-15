@@ -1,0 +1,668 @@
+# 🛡️ Aegis — AI Agent Operating System
+
+> **An operating system for building, orchestrating and executing AI agents.**
+
+O **Aegis** é uma plataforma de infraestrutura para criação e execução de agentes de Inteligência Artificial, projetada para centralizar **tasks, agentes, ferramentas, memória, execução e observabilidade** em uma arquitetura modular e escalável.
+
+A proposta é criar uma camada de infraestrutura capaz de transformar agentes de IA isolados em **sistemas autônomos, observáveis e orientados a execução**.
+
+---
+
+## 🎯 Objetivo
+
+O Aegis nasceu com uma pergunta:
+
+> **E se agentes de IA fossem tratados como software de produção, e não apenas como prompts?**
+
+A plataforma busca fornecer uma infraestrutura na qual um agente possa:
+
+```text
+Receber uma tarefa
+      ↓
+Interpretar o objetivo
+      ↓
+Planejar a execução
+      ↓
+Selecionar ferramentas
+      ↓
+Executar ações
+      ↓
+Persistir contexto e resultados
+      ↓
+Avaliar o resultado
+      ↓
+Finalizar ou continuar a execução
+```
+
+O objetivo final é permitir a construção de sistemas de agentes que possam operar de forma confiável dentro de aplicações reais.
+
+---
+
+# 🏗️ Arquitetura
+
+A arquitetura do Aegis é organizada em camadas:
+
+```text
+┌─────────────────────────────────────────────┐
+│                 AEGIS API                   │
+│                  FastAPI                    │
+├─────────────────────────────────────────────┤
+│              Agent Orchestrator             │
+│        Planning / Routing / Execution       │
+├─────────────────────────────────────────────┤
+│                Agent Runtime                │
+│       Agents / Tools / Memory / State       │
+├─────────────────────────────────────────────┤
+│              Application Layer              │
+│        Services / Business Logic            │
+├─────────────────────────────────────────────┤
+│             Persistence Layer               │
+│       Repository / SQLAlchemy / ORM         │
+├─────────────────────────────────────────────┤
+│                 PostgreSQL                  │
+└─────────────────────────────────────────────┘
+```
+
+---
+
+# 🧠 Conceitos principais
+
+## Agents
+
+Agentes são unidades responsáveis por interpretar objetivos e executar tarefas.
+
+Cada agente poderá possuir:
+
+* identidade;
+* instruções;
+* modelo de linguagem;
+* ferramentas;
+* memória;
+* contexto;
+* permissões;
+* estado de execução.
+
+---
+
+## Tasks
+
+Uma `Task` representa uma unidade de trabalho executável pelo sistema.
+
+Exemplo:
+
+```json
+{
+  "title": "Analyze customer data",
+  "description": "Identify relevant patterns",
+  "status": "pending"
+}
+```
+
+Estados esperados:
+
+```text
+PENDING
+   ↓
+RUNNING
+   ↓
+COMPLETED
+```
+
+ou:
+
+```text
+RUNNING
+   ↓
+FAILED
+```
+
+---
+
+## Tools
+
+Ferramentas permitem que agentes interajam com sistemas externos.
+
+Exemplos planejados:
+
+```text
+HTTP APIs
+Databases
+File Systems
+Python
+Web Browsing
+Code Execution
+Internal APIs
+External Services
+```
+
+O agente não deve executar qualquer ferramenta arbitrariamente. A arquitetura prevê uma camada de controle para validar:
+
+```text
+Agent
+  ↓
+Tool Selection
+  ↓
+Permission Check
+  ↓
+Tool Execution
+  ↓
+Result
+```
+
+---
+
+# 💾 Persistência
+
+O Aegis utiliza PostgreSQL como banco de dados principal.
+
+A comunicação com o banco é realizada através de:
+
+```text
+FastAPI
+   ↓
+Service
+   ↓
+Repository
+   ↓
+SQLAlchemy
+   ↓
+PostgreSQL
+```
+
+Essa separação permite manter a lógica de negócio independente da implementação de persistência.
+
+---
+
+# 🗄️ Database
+
+Banco utilizado:
+
+```text
+PostgreSQL
+```
+
+ORM:
+
+```text
+SQLAlchemy
+```
+
+Driver assíncrono:
+
+```text
+asyncpg
+```
+
+Migrações:
+
+```text
+Alembic
+```
+
+---
+
+# ⚙️ Backend
+
+O backend é desenvolvido em Python utilizando:
+
+| Tecnologia | Função                   |
+| ---------- | ------------------------ |
+| Python     | Linguagem principal      |
+| FastAPI    | API REST                 |
+| Pydantic   | Validação e configuração |
+| SQLAlchemy | ORM                      |
+| asyncpg    | PostgreSQL async driver  |
+| Alembic    | Database migrations      |
+| Pytest     | Testes                   |
+
+---
+
+# 📁 Estrutura do projeto
+
+A estrutura planejada segue uma separação por responsabilidades:
+
+```text
+Aegis/
+│
+├── backend/
+│   │
+│   ├── app/
+│   │   │
+│   │   ├── api/
+│   │   │   └── routes/
+│   │   │
+│   │   ├── core/
+│   │   │   ├── config.py
+│   │   │   └── database.py
+│   │   │
+│   │   ├── db/
+│   │   │   ├── base.py
+│   │   │   └── models/
+│   │   │
+│   │   ├── repositories/
+│   │   │
+│   │   ├── services/
+│   │   │
+│   │   ├── agents/
+│   │   │
+│   │   ├── tools/
+│   │   │
+│   │   └── main.py
+│   │
+│   ├── alembic/
+│   │   └── versions/
+│   │
+│   ├── tests/
+│   │
+│   ├── .env
+│   ├── alembic.ini
+│   └── requirements.txt
+│
+├── frontend/
+│
+├── docker-compose.yml
+│
+└── README.md
+```
+
+---
+
+# 🚀 Execução local
+
+## 1. Clonar o projeto
+
+```bash
+git clone <repository-url>
+cd Aegis
+```
+
+---
+
+## 2. Criar ambiente virtual
+
+Windows:
+
+```powershell
+python -m venv .venv
+```
+
+Ativar:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Linux/macOS:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+---
+
+## 3. Instalar dependências
+
+```powershell
+pip install -r backend/requirements.txt
+```
+
+---
+
+## 4. Configurar ambiente
+
+Crie:
+
+```text
+backend/.env
+```
+
+Exemplo:
+
+```env
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/aegis
+```
+
+> Nunca versione o arquivo `.env`.
+
+Utilize `.env.example` para documentar as variáveis necessárias.
+
+---
+
+# 🐘 PostgreSQL com Docker
+
+O ambiente de desenvolvimento utiliza PostgreSQL em container.
+
+Subir:
+
+```powershell
+docker compose up -d
+```
+
+Ver containers:
+
+```powershell
+docker ps
+```
+
+Ver logs:
+
+```powershell
+docker logs aegis-postgres
+```
+
+Parar:
+
+```powershell
+docker compose down
+```
+
+---
+
+# 🗃️ Migrations
+
+Criar uma migration:
+
+```powershell
+cd backend
+
+alembic revision --autogenerate -m "description"
+```
+
+Executar migrations:
+
+```powershell
+alembic upgrade head
+```
+
+Voltar uma migration:
+
+```powershell
+alembic downgrade -1
+```
+
+Verificar estado:
+
+```powershell
+alembic current
+```
+
+---
+
+# ▶️ Executando a API
+
+Dentro de `backend`:
+
+```powershell
+uvicorn app.main:app --reload
+```
+
+A API ficará disponível em:
+
+```text
+http://127.0.0.1:8000
+```
+
+Documentação Swagger:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+ReDoc:
+
+```text
+http://127.0.0.1:8000/redoc
+```
+
+---
+
+# 🧪 Testes
+
+Executar todos os testes:
+
+```powershell
+pytest
+```
+
+Modo verbose:
+
+```powershell
+pytest -v
+```
+
+Executar um arquivo específico:
+
+```powershell
+pytest tests/test_tasks.py -v
+```
+
+A estratégia de testes contempla:
+
+```text
+Unit Tests
+     ↓
+Service Tests
+     ↓
+Repository Tests
+     ↓
+Integration Tests
+     ↓
+API Tests
+```
+
+---
+
+# 🔄 Fluxo de execução
+
+Um fluxo simplificado do Aegis:
+
+```text
+             ┌──────────────┐
+             │    Client    │
+             └──────┬───────┘
+                    │
+                    ▼
+             ┌──────────────┐
+             │   FastAPI    │
+             └──────┬───────┘
+                    │
+                    ▼
+             ┌──────────────┐
+             │ Task Service │
+             └──────┬───────┘
+                    │
+                    ▼
+             ┌──────────────┐
+             │   Agent      │
+             │ Orchestrator │
+             └──────┬───────┘
+                    │
+          ┌─────────┼─────────┐
+          ▼         ▼         ▼
+       Memory     Tools      LLM
+          │         │         │
+          └─────────┼─────────┘
+                    ▼
+             ┌──────────────┐
+             │    Result    │
+             └──────┬───────┘
+                    │
+                    ▼
+             ┌──────────────┐
+             │  PostgreSQL  │
+             └──────────────┘
+```
+
+---
+
+# 🔐 Princípios de engenharia
+
+O projeto segue alguns princípios:
+
+### Separation of Concerns
+
+Cada camada possui uma responsabilidade específica.
+
+### Dependency Injection
+
+Dependências são fornecidas pela aplicação em vez de serem criadas diretamente pelas regras de negócio.
+
+### Repository Pattern
+
+A persistência é isolada através de repositories.
+
+### Async First
+
+Operações de I/O são projetadas para funcionar de maneira assíncrona.
+
+### Testability
+
+Componentes devem poder ser testados isoladamente.
+
+### Observability
+
+Execuções de agentes devem possuir rastreabilidade e estados observáveis.
+
+### Security by Design
+
+Ferramentas e agentes devem possuir limites e permissões explícitas.
+
+---
+
+# 🧭 Roadmap
+
+## Phase 1 — Foundation
+
+* [x] FastAPI backend
+* [x] Task API
+* [x] PostgreSQL
+* [x] SQLAlchemy
+* [x] Alembic
+* [ ] Repository layer completa
+* [ ] Integration tests
+
+---
+
+## Phase 2 — Agent Runtime
+
+* [ ] Agent model
+* [ ] Agent lifecycle
+* [ ] Execution engine
+* [ ] Agent state
+* [ ] Run management
+* [ ] Error handling
+* [ ] Retry mechanism
+
+---
+
+## Phase 3 — Tool System
+
+* [ ] Tool registry
+* [ ] Tool schemas
+* [ ] Tool permissions
+* [ ] HTTP tool
+* [ ] Python execution tool
+* [ ] Database tool
+* [ ] File tool
+
+---
+
+## Phase 4 — Memory
+
+* [ ] Short-term memory
+* [ ] Long-term memory
+* [ ] Conversation state
+* [ ] Context management
+* [ ] Memory retrieval
+
+---
+
+## Phase 5 — LLM Layer
+
+* [ ] Provider abstraction
+* [ ] OpenAI integration
+* [ ] Gemini integration
+* [ ] Anthropic integration
+* [ ] Model selection
+* [ ] Token tracking
+* [ ] Cost tracking
+
+---
+
+## Phase 6 — Orchestration
+
+* [ ] Planning
+* [ ] Task decomposition
+* [ ] Agent routing
+* [ ] Multi-agent execution
+* [ ] Human approval
+* [ ] Execution policies
+
+---
+
+## Phase 7 — Observability
+
+* [ ] Structured logs
+* [ ] Agent traces
+* [ ] Execution metrics
+* [ ] Token usage
+* [ ] Latency monitoring
+* [ ] Failure tracking
+* [ ] Audit trail
+
+---
+
+# 🛡️ Aegis Architecture Vision
+
+A longo prazo, o Aegis pretende funcionar como uma camada de infraestrutura entre aplicações e modelos de IA:
+
+```text
+                    APPLICATIONS
+                         │
+                         ▼
+              ┌────────────────────┐
+              │       AEGIS        │
+              │                    │
+              │ Agent Runtime      │
+              │ Orchestrator       │
+              │ Memory             │
+              │ Tools              │
+              │ Policies           │
+              │ Observability      │
+              │ Persistence        │
+              └─────────┬──────────┘
+                        │
+             ┌──────────┼──────────┐
+             ▼          ▼          ▼
+           OpenAI    Gemini    Anthropic
+```
+
+A ideia não é construir apenas mais um chatbot.
+
+O objetivo é construir uma **infraestrutura para agentes de IA**.
+
+---
+
+# 📌 Status
+
+```text
+Development
+```
+
+O Aegis encontra-se em desenvolvimento ativo. A arquitetura e as APIs podem sofrer alterações enquanto os componentes centrais do Agent Runtime e do Orchestrator são implementados.
+
+---
+
+# 👨‍💻 Author
+
+**Guilherme Andrelino**
+
+Engenharia de Controle e Automação
+Software Engineering • AI • Automation • Data
+
+---
+
+# 📄 License
+
+Este projeto está em desenvolvimento. A licença será definida conforme a estratégia de distribuição do projeto.
