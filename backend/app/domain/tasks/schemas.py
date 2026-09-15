@@ -1,21 +1,20 @@
-from dataclasses import dataclass
 from datetime import datetime
-from enum import StrEnum
 from uuid import UUID
 
+from pydantic import BaseModel, Field
 
-class TaskStatus(StrEnum):
-    PENDING = "pending"
-    PLANNING = "planning"
-    RUNNING = "running"
-    REVIEWING = "reviewing"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
+from app.domain.tasks.models import TaskStatus
 
 
-@dataclass
-class Task:
+class TaskCreate(BaseModel):
+    description: str = Field(
+        min_length=1,
+        max_length=10_000,
+        description="Natural language description of the task.",
+    )
+
+
+class TaskResponse(BaseModel):
     id: UUID
     description: str
     status: TaskStatus
