@@ -1,8 +1,11 @@
-from uuid import UUID
+﻿from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.database import get_db_session
 from app.domain.tasks.schemas import TaskCreate, TaskResponse
+from app.infrastructure.repositories.task_repository import TaskRepository
 from app.services.task_service import TaskService
 
 
@@ -11,7 +14,13 @@ router = APIRouter(
     tags=["Tasks"],
 )
 
-task_service = TaskService()
+
+def get_task_service(
+    session: AsyncSession = Depends(get_db_session),
+) -> TaskService:
+    repository = TaskRepository(session)
+
+    return TaskService(repository)
 
 
 @router.post(
@@ -19,8 +28,11 @@ task_service = TaskService()
     response_model=TaskResponse,
     status_code=status.HTTP_201_CREATED,
 )
-async def create_task(data: TaskCreate) -> TaskResponse:
-    task = task_service.create_task(data)
+async def create_task(
+    data: TaskCreate,
+    service: TaskService = Depends(get_task_service),
+) -> TaskResponse:
+    task = await service.create_task(data)
 
     return TaskResponse(
         id=task.id,
@@ -34,8 +46,11 @@ async def create_task(data: TaskCreate) -> TaskResponse:
     "/{task_id}",
     response_model=TaskResponse,
 )
-async def get_task(task_id: UUID) -> TaskResponse:
-    task = task_service.get_task(task_id)
+async def get_task(
+    task_id: UUID,
+    service: TaskService = Depends(get_task_service),
+) -> TaskResponse:
+    task = await service.get_task(task_id)
 
     if task is None:
         raise HTTPException(
