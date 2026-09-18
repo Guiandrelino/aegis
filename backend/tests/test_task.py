@@ -1,14 +1,18 @@
-﻿from uuid import UUID
+﻿import pytest
+from uuid import UUID
 
 from fastapi.testclient import TestClient
 
 from app.main import app
 
 
-client = TestClient(app)
+@pytest.fixture(scope="module")
+def client():
+    with TestClient(app) as test_client:
+        yield test_client
 
 
-def test_create_task() -> None:
+def test_create_task(client: TestClient) -> None:
     response = client.post(
         "/api/v1/tasks",
         json={
@@ -26,7 +30,7 @@ def test_create_task() -> None:
     assert "created_at" in data
 
 
-def test_create_task_rejects_empty_description() -> None:
+def test_create_task_rejects_empty_description(client: TestClient) -> None:
     response = client.post(
         "/api/v1/tasks",
         json={
@@ -37,7 +41,7 @@ def test_create_task_rejects_empty_description() -> None:
     assert response.status_code == 422
 
 
-def test_get_task() -> None:
+def test_get_task(client: TestClient) -> None:
     create_response = client.post(
         "/api/v1/tasks",
         json={
@@ -60,7 +64,7 @@ def test_get_task() -> None:
     assert data["status"] == "pending"
 
 
-def test_get_task_not_found() -> None:
+def test_get_task_not_found(client: TestClient) -> None:
     response = client.get(
         "/api/v1/tasks/00000000-0000-0000-0000-000000000000"
     )
