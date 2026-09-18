@@ -1,15 +1,16 @@
-from datetime import UTC, datetime
+﻿from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from app.domain.tasks.models import Task, TaskStatus
 from app.domain.tasks.schemas import TaskCreate
+from app.infrastructure.repositories.task_repository import TaskRepository
 
 
 class TaskService:
-    def __init__(self) -> None:
-        self._tasks: dict[UUID, Task] = {}
+    def __init__(self, repository: TaskRepository) -> None:
+        self._repository = repository
 
-    def create_task(self, data: TaskCreate) -> Task:
+    async def create_task(self, data: TaskCreate) -> Task:
         task = Task(
             id=uuid4(),
             description=data.description,
@@ -17,9 +18,7 @@ class TaskService:
             created_at=datetime.now(UTC),
         )
 
-        self._tasks[task.id] = task
+        return await self._repository.create(task)
 
-        return task
-
-    def get_task(self, task_id: UUID) -> Task | None:
-        return self._tasks.get(task_id)
+    async def get_task(self, task_id: UUID) -> Task | None:
+        return await self._repository.get_by_id(task_id)
